@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/songlistitem"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <ImageView
+        android:id="@+id/albumart"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentStart="true"
+        android:layout_marginEnd="16dp"
+        android:src="@drawable/placeholder_coverart"
+        android:transitionName="transition_coverart" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_toEndOf="@id/albumart"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="4sp"
+            android:text="Titolo"
+            android:textColor="@android:color/black" />
+
+        <TextView
+            android:id="@+id/artist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Autore" />
+
+        <TextView
+            android:id="@+id/filepath"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="filepath" />
+
+        <TextView
+            android:id="@+id/songid"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="songid" />
+
+        <TextView
+            android:id="@+id/listitemposition"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="listitemposition" />
+    </LinearLayout>
+
+
+</RelativeLayout>

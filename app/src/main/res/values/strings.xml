@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Bloo</string>
+    <string name="coverart">coverArt</string>
+    <string name="next">next</string>
+    <string name="shuffle">shuffle</string>
+    <string name="previous">previous</string>
+    <string name="repeat">repeat</string>
+    <string name="song">song</string>
+    <string name="lastfm_api_key">75034ef1fcfd0ed0cd8176b25725f169</string>
+</resources>

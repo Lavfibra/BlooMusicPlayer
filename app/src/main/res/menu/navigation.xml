@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_songs"
+        android:icon="@drawable/ic_baseline_music_note_24px"
+        android:title="Brani" />
+
+    <item
+        android:id="@+id/navigation_artists"
+        android:icon="@drawable/ic_baseline_person_24px"
+        android:title="Artisti" />
+
+    <!--<item
+        android:id="@+id/navigation_albums"
+        android:icon="@drawable/ic_baseline_album_24px"
+        android:title="Album"/>
+
+    <item
+        android:id="@+id/navigation_playlists"
+        android:icon="@drawable/ic_baseline_playlist_music_24px"
+        android:title="Playlists"/> -->
+</menu>

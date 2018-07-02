@@ -97,13 +97,11 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onRestart() {
         super.onRestart();
-        Toast.makeText(this, "onRestart", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Toast.makeText(this, "onResume", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -114,7 +112,6 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        Toast.makeText(this, "onStart", Toast.LENGTH_SHORT).show();
         // Bind to LocalService
         Intent intent = new Intent(this, MusicService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
@@ -208,7 +205,6 @@ public class PlayerActivity extends AppCompatActivity {
                         broadcaster.sendBroadcast(previousIntent);
                     }
                 }
-                Toast.makeText(PlayerActivity.this, "Funziono", Toast.LENGTH_SHORT).show();
             }
 
             @Override

@@ -460,7 +460,7 @@ public class PlayerActivity extends AppCompatActivity {
                         v.setImageDrawable(d);
                     }
                 })
-                .build(); //Create and send the request
+                .build(); //Create and send the request;
     }
 
     private void resizeStatusBar() {

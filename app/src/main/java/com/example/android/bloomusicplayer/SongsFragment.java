@@ -1,23 +1,26 @@
 package com.example.android.bloomusicplayer;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
-import android.widget.TextView;
 
 import com.example.android.bloomusicplayer.model.SongList;
-import com.example.android.bloomusicplayer.model.SongsArray;
 import com.google.gson.Gson;
 
 public class SongsFragment extends Fragment {
     public SongList mSongList;
-    ListView mSongsListView;
+    Gson gson;
+
+    RecyclerView mRecyclerView;
+    RecyclerView.Adapter mAdapter;
+    RecyclerView.LayoutManager mLayoutManager;
 
     static SongsFragment newInstance(SongList songList) {
         SongsFragment songsFragment = new SongsFragment();
@@ -32,39 +35,32 @@ public class SongsFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        assert getArguments() != null;
         String songsAsAString = getArguments().getString("songList");
-        Gson gson = new Gson();
+        gson = new Gson();
         mSongList = gson.fromJson(songsAsAString, SongList.class);
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.songs_fragment, container, false);
-        mSongsListView = v.findViewById(R.id.songslist);
+        mRecyclerView = v.findViewById(R.id.songslist);
+
+        // use this setting to improve performance if you know that changes
+        // in content do not change the layout size of the RecyclerView
+        mRecyclerView.setHasFixedSize(true);
+
+        // use a linear layout manager
+        mLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
+
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(), LinearLayoutManager.VERTICAL);
+        mRecyclerView.addItemDecoration(dividerItemDecoration);
+
+        mRecyclerView.setLayoutManager(mLayoutManager);
+
+        // specify an adapter (see also next example)
+        mAdapter = new SongsListAdapter(getContext(), mRecyclerView, mSongList);
+        mRecyclerView.setAdapter(mAdapter);
         return v;
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        SongTask songTask = new SongTask(getContext(), view, mSongList);
-        songTask.execute();
-
-        mSongsListView.setOnItemClickListener((adapterView, view1, i, l) -> {
-            TextView listitemposition = view1.findViewById(R.id.listitemposition);
-            int passposition = Integer.parseInt(listitemposition.getText().toString());
-
-            Gson gson = new Gson();
-            SongsArray songsArray = new SongsArray(mSongList.getSongs());
-            String songsListAsAString = gson.toJson(songsArray);
-
-            Intent intent = new Intent(getContext(), PlayerActivity.class);
-            intent.putExtra("songsList", songsListAsAString);
-            intent.putExtra("position", passposition);
-            startActivity(intent);
-
-        });
     }
 
 }

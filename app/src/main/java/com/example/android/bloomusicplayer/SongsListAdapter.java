@@ -1,18 +1,22 @@
 package com.example.android.bloomusicplayer;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.android.bloomusicplayer.model.Song;
+import com.example.android.bloomusicplayer.model.SongList;
+import com.example.android.bloomusicplayer.model.SongsArray;
+import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -22,67 +26,24 @@ import java.util.ArrayList;
  */
 
 
-public class SongsListAdapter extends ArrayAdapter<Song> {
+public class SongsListAdapter extends RecyclerView.Adapter<SongsListAdapter.ViewHolder> {
     private ImageCache mAlbumCache;
     private Context mContext;
+    private SongList mSongList;
+    private ArrayList<Song> mSongs;
 
-    SongsListAdapter(Context mContext, int songlistitem, ArrayList<Song> songs) {
-        super(mContext, songlistitem, songs);
-        this.mContext = mContext;
+    private RecyclerView mRecyclerView;
+
+    SongsListAdapter(Context context, RecyclerView recyclerView, SongList songList) {
+        mContext = context;
+        mRecyclerView = recyclerView;
+        mSongList = songList;
+        mSongs = mSongList.getSongs();
+
         mAlbumCache = new ImageCache();
     }
 
-    @SuppressLint({"InflateParams", "StaticFieldLeak"})
-    @NonNull
-    @Override
-    public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
-        View v = convertView;
-        SongItemHolder songItemHolder;
-
-
-        if (v == null) {
-            LayoutInflater vi;
-            vi = LayoutInflater.from(getContext());
-            v = vi.inflate(R.layout.songlistitem, null);
-
-            songItemHolder = new SongItemHolder();
-            songItemHolder.title = v.findViewById(R.id.title);
-            songItemHolder.artist = v.findViewById(R.id.artist);
-            songItemHolder.filepath = v.findViewById(R.id.filepath);
-            songItemHolder.songid = v.findViewById(R.id.songid);
-            songItemHolder.listitemposition = v.findViewById(R.id.listitemposition);
-            songItemHolder.albumart = v.findViewById(R.id.albumart);
-            songItemHolder.albumart.setTransitionName("transition_coverart");
-            v.setTag(songItemHolder);
-        } else {
-            songItemHolder = (SongItemHolder) v.getTag();
-        }
-
-        final Song p = getItem(position);
-
-        if (p != null) {
-            songItemHolder.title.setText(p.getTitle());
-            songItemHolder.artist.setText(p.getArtist());
-            songItemHolder.filepath.setText(p.getFilePath());
-            songItemHolder.songid.setText(String.valueOf(p.getId()));
-            songItemHolder.listitemposition.setText(String.valueOf(position));
-            songItemHolder.albumart.setTag(position);
-            songItemHolder.albumart.setImageBitmap(null);
-            songItemHolder.albumart.setTransitionName("transition_coverart");
-
-            final String resId = String.valueOf(p.getId());
-
-            final Bitmap bitmap = mAlbumCache.getBitmapFromMemCache(resId);
-            if (bitmap != null) {
-                songItemHolder.albumart.setImageBitmap(bitmap);
-            } else {
-                loadBitmap(p, songItemHolder.albumart, position);
-            }
-        }
-        return v;
-    }
-
-    private void loadBitmap(final Song mP, ImageView mImageView, final int mPosition) {
+    private void loadBitmap(final Song mP, ImageView mImageView) {
         final String resId = String.valueOf(mP.getId());
 
         final Bitmap bitmap = mAlbumCache.getBitmapFromMemCache(resId);
@@ -104,10 +65,10 @@ public class SongsListAdapter extends ArrayAdapter<Song> {
                     if (isCancelled()) {
                         result = null;
                     }
-                    if (result != null && (Integer) v.getTag() == getPosition(mP)) {
+                    if (result != null) {
                         v.setImageBitmap(result);
                         mAlbumCache.addBitmapToMemoryCache(String.valueOf(resId), result);
-                    } else if ((Integer) v.getTag() == getPosition(mP)) {
+                    } else {
                         Picasso.get().load(R.drawable.placeholder_coverart).into(v);
                     }
 
@@ -116,7 +77,61 @@ public class SongsListAdapter extends ArrayAdapter<Song> {
         }
     }
 
-    static class SongItemHolder {
+    @NonNull
+    @Override
+    public SongsListAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        LayoutInflater vi;
+        vi = LayoutInflater.from(mContext);
+        RelativeLayout relativeLayout = (RelativeLayout) vi.inflate(R.layout.songlistitem, parent, false);
+        relativeLayout = relativeLayout.findViewById(R.id.songlistitem);
+
+        relativeLayout.setOnClickListener(v -> {
+            Gson gson = new Gson();
+
+            TextView listitemposition = v.findViewById(R.id.listitemposition);
+            int passposition = Integer.parseInt(listitemposition.getText().toString());
+
+            SongsArray songsArray = new SongsArray(mSongList.getSongs());
+            String songsListAsAString = gson.toJson(songsArray);
+
+            Intent intent = new Intent(mContext, PlayerActivity.class);
+            intent.putExtra("songsList", songsListAsAString);
+            intent.putExtra("position", passposition);
+            mContext.startActivity(intent);
+        });
+
+        return new ViewHolder(relativeLayout);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        Song p = mSongs.get(position);
+
+        holder.title.setText(p.getTitle());
+        holder.artist.setText(p.getArtist());
+        holder.filepath.setText(p.getFilePath());
+        holder.songid.setText(String.valueOf(p.getId()));
+        holder.listitemposition.setText(String.valueOf(position));
+        holder.albumart.setTag(position);
+        holder.albumart.setImageBitmap(null);
+        holder.albumart.setTransitionName("transition_coverart");
+
+        final String resId = String.valueOf(p.getId());
+
+        final Bitmap bitmap = mAlbumCache.getBitmapFromMemCache(resId);
+        if (bitmap != null) {
+            holder.albumart.setImageBitmap(bitmap);
+        } else {
+            loadBitmap(p, holder.albumart);
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        return mSongs.size();
+    }
+
+    static class ViewHolder extends RecyclerView.ViewHolder {
         public ImageView albumart;
         public TextView title;
         public TextView artist;
@@ -125,5 +140,14 @@ public class SongsListAdapter extends ArrayAdapter<Song> {
         public TextView listitemposition;
 
 
+        public ViewHolder(View v) {
+            super(v);
+            title = v.findViewById(R.id.title);
+            artist = v.findViewById(R.id.artist);
+            filepath = v.findViewById(R.id.filepath);
+            songid = v.findViewById(R.id.songid);
+            listitemposition = v.findViewById(R.id.listitemposition);
+            albumart = v.findViewById(R.id.albumart);
+        }
     }
 }

@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
                     .go();
         }
         mSongsList = new SongList();
+        mSongsList.scanSongs(this, "external");
         bottomNavigationView =
                 findViewById(R.id.navigation);
 

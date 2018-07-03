@@ -23,8 +23,8 @@
         android:layout_gravity="bottom"
         android:layout_weight="0"
         android:background="@color/colorPrimary"
-        app:itemIconTint="@color/colorAccent"
-        app:itemTextColor="@color/colorAccent"
+        app:itemIconTint="@android:color/white"
+        app:itemTextColor="@android:color/white"
         app:menu="@menu/navigation" />
 
 

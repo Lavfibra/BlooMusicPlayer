@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -268,13 +269,9 @@ public class PlayerActivity extends AppCompatActivity {
         PackageManager pm = getApplicationContext().getPackageManager();
         try {
             pm.getPackageInfo("com.geecko.QuickLyric", PackageManager.GET_ACTIVITIES);
-            lyrics.setOnClickListener(v -> {
-                startActivity(new Intent("com.geecko.QuickLyric.getLyrics").putExtra("TAGS", new String[]{mSong.getArtist(), mSong.getTitle()}));
-            });
+            lyrics.setOnClickListener(v -> startActivity(new Intent("com.geecko.QuickLyric.getLyrics").putExtra("TAGS", new String[]{mSong.getArtist(), mSong.getTitle()})));
         } catch (PackageManager.NameNotFoundException ignored) {
-            lyrics.setOnClickListener(v -> {
-                Toast.makeText(this, "Installa QuickLyrics dal Playstore per avere accesso ai testi delle canzoni", Toast.LENGTH_SHORT).show();
-            });
+            lyrics.setOnClickListener(v -> Toast.makeText(this, "Installa QuickLyrics dal Playstore per avere accesso ai testi delle canzoni", Toast.LENGTH_SHORT).show());
         }
 
         final ImageButton previous = findViewById(R.id.previous);
@@ -306,48 +303,50 @@ public class PlayerActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 String user = intent.getStringExtra("user");
                 String action = intent.getAction();
-                switch (action) {
-                    case Constants.ACTION.NEXT_ACTION:
-                        next(user);
-                        if (playPauseView.isPlay()) {
-                            playPauseView.toggle();
-                            equalizerView.animateBars();
-                        }
-                        break;
-                    case Constants.ACTION.PREV_ACTION:
-                        previous(user);
-                        if (playPauseView.isPlay()) {
-                            playPauseView.toggle();
-                            equalizerView.animateBars();
-                        }
-                        break;
-                    case Constants.ACTION.PLAY_ACTION:
-                        String type = intent.getStringExtra("type");
-                        if (type.equals("start")) {
+                if (action != null) {
+                    switch (action) {
+                        case Constants.ACTION.NEXT_ACTION:
+                            next(user);
                             if (playPauseView.isPlay()) {
                                 playPauseView.toggle();
+                                equalizerView.animateBars();
                             }
-                            equalizerView.animateBars();
-                        } else if (type.equals("pause")) {
-                            if (!playPauseView.isPlay()) {
+                            break;
+                        case Constants.ACTION.PREV_ACTION:
+                            previous(user);
+                            if (playPauseView.isPlay()) {
                                 playPauseView.toggle();
+                                equalizerView.animateBars();
                             }
-                            equalizerView.stopBars();
-                        }
-                        break;
-                    case Constants.ACTION.SEEKTO_ACTION:
-                        int dur1 = intent.getIntExtra("progress", 0);
-                        mSeekBar.setProgress(dur1);
-                        int mns1 = dur1 / 60000 % 60000;
-                        int scs1 = dur1 % 60000 / 1000;
-                        String progress = String.format(Locale.ITALY, "%02d:%02d", mns1, scs1);
-                        startPosition.setText(progress);
-                        break;
-                    case Constants.ACTION.UPDATE_SONG:
-                        position = intent.getIntExtra("position", -100);
-                        mSong = mSongs.get(position);
-                        setupViews();
-                        break;
+                            break;
+                        case Constants.ACTION.PLAY_ACTION:
+                            String type = intent.getStringExtra("type");
+                            if (type.equals("start")) {
+                                if (playPauseView.isPlay()) {
+                                    playPauseView.toggle();
+                                }
+                                equalizerView.animateBars();
+                            } else if (type.equals("pause")) {
+                                if (!playPauseView.isPlay()) {
+                                    playPauseView.toggle();
+                                }
+                                equalizerView.stopBars();
+                            }
+                            break;
+                        case Constants.ACTION.SEEKTO_ACTION:
+                            int dur1 = intent.getIntExtra("progress", 0);
+                            mSeekBar.setProgress(dur1);
+                            int mns1 = dur1 / 60000 % 60000;
+                            int scs1 = dur1 % 60000 / 1000;
+                            String progress = String.format(Locale.ITALY, "%02d:%02d", mns1, scs1);
+                            startPosition.setText(progress);
+                            break;
+                        case Constants.ACTION.UPDATE_SONG:
+                            position = intent.getIntExtra("position", -100);
+                            mSong = mSongs.get(position);
+                            setupViews();
+                            break;
+                    }
                 }
             }
         };
@@ -522,13 +521,16 @@ public class PlayerActivity extends AppCompatActivity {
         @Override
         public void onCreate(@Nullable Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            String songsAsAString = getArguments().getString("song");
+            String songsAsAString = null;
+            if (getArguments() != null) {
+                songsAsAString = getArguments().getString("song");
+            }
             Gson gson = new Gson();
             mSong = gson.fromJson(songsAsAString, Song.class);
         }
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+        public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View v = inflater.inflate(R.layout.playerpagercoverart, container, false);
             SquareImageView coverArt = v.findViewById(R.id.playercoverart);
@@ -552,7 +554,7 @@ public class PlayerActivity extends AppCompatActivity {
     public class CoverStatePagerAdapter extends FragmentStatePagerAdapter {
         ArrayList<Song> mSongs;
 
-        public CoverStatePagerAdapter(FragmentManager fragmentManager, ArrayList<Song> songList) {
+        CoverStatePagerAdapter(FragmentManager fragmentManager, ArrayList<Song> songList) {
             super(fragmentManager);
             mSongs = songList;
         }

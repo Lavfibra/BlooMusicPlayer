@@ -22,17 +22,18 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ArtistListAdapter extends ArrayAdapter<String> {
-    LastFMRequest request;
+    private LastFMRequest request;
     private ImageCache mArtistCache;
     private Context mContext;
     private SongList mSongList;
 
 
-    public ArtistListAdapter(Context mContext, int artistListItem, ArrayList<String> artists, SongList songList) {
+    ArtistListAdapter(Context mContext, int artistListItem, ArrayList<String> artists, SongList songList) {
         super(mContext, artistListItem, artists);
         this.mContext = mContext;
         mSongList = songList;
@@ -45,6 +46,7 @@ public class ArtistListAdapter extends ArrayAdapter<String> {
         return mSongList.getArtists().size();
     }
 
+    @NonNull
     public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
         View v = convertView;
         ArtistItemHolder artistItemHolder;
@@ -80,7 +82,6 @@ public class ArtistListAdapter extends ArrayAdapter<String> {
             int numAlbums = albums.size();
             String artistdescriptor = String.valueOf(numAlbums) + " album, " + secondsToString(totalDuration);
             artistItemHolder.artistDescriptor.setText(artistdescriptor);
-            final String resId = String.valueOf(position);
 
             Bitmap bitmap = mArtistCache.getBitmapFromMemCache(p);
             if (bitmap != null) {
@@ -92,7 +93,7 @@ public class ArtistListAdapter extends ArrayAdapter<String> {
         return v;
     }
 
-    public void loadBitmap(final String mArtist, final ImageView v) {
+    private void loadBitmap(final String mArtist, final ImageView v) {
 
         v.setImageBitmap(null);
         request.requestArtist()    //Returns a new ArtistTask for fetching info about an artist
@@ -134,10 +135,10 @@ public class ArtistListAdapter extends ArrayAdapter<String> {
     }
 
     private String secondsToString(int pTime) {
-        return String.format("%02d:%02d", pTime / 60, pTime % 60);
+        return String.format(Locale.ENGLISH, "%02d:%02d", pTime / 60, pTime % 60);
     }
 
-    static class ArtistItemHolder {
+    private static class ArtistItemHolder {
         private CircleImageView artistImage;
         private TextView artist;
         private TextView artistDescriptor;

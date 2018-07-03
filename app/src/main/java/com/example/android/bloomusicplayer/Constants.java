@@ -5,7 +5,6 @@ public class Constants {
 
     public interface ACTION {
         String MAIN_ACTION = "com.bloomusicplayer.foregroundservice.action.main";
-        String INIT_ACTION = "com.bloomusicplayer.foregroundservice.action.init";
         String PREV_ACTION = "com.bloomusicplayer.foregroundservice.action.prev";
         String PLAY_ACTION = "com.bloomusicplayer.foregroundservice.action.play";
         String NEXT_ACTION = "com.bloomusicplayer.foregroundservice.action.next";

@@ -16,7 +16,6 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.example.android.bloomusicplayer.model.Song;
 import com.example.android.bloomusicplayer.model.SongsArray;
@@ -59,7 +58,6 @@ public class MusicService extends Service {
     public void onCreate() {
         super.onCreate();
         gson = new Gson();
-        Toast.makeText(this, "onCreate()()", Toast.LENGTH_SHORT).show();
         serviceManager = new ServiceManager(getApplicationContext());
         mLoopType = "all";
         mBroadcastReceiver = new BroadcastReceiver() {
@@ -67,19 +65,21 @@ public class MusicService extends Service {
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getAction();
                 String user = intent.getStringExtra("user");
-                switch (action) {
-                    case Constants.ACTION.NEXT_ACTION:
-                        next(user);
-                        break;
-                    case Constants.ACTION.PREV_ACTION:
-                        previous(user);
-                        break;
-                    case Constants.ACTION.PLAY_ACTION:
-                        if (intent.getStringExtra("type").equals("start"))
-                            start(user);
-                        else if (intent.getStringExtra("type").equals("pause"))
-                            pause(user);
-                        break;
+                if (action != null) {
+                    switch (action) {
+                        case Constants.ACTION.NEXT_ACTION:
+                            next(user);
+                            break;
+                        case Constants.ACTION.PREV_ACTION:
+                            previous(user);
+                            break;
+                        case Constants.ACTION.PLAY_ACTION:
+                            if (intent.getStringExtra("type").equals("start"))
+                                start(user);
+                            else if (intent.getStringExtra("type").equals("pause"))
+                                pause(user);
+                            break;
+                    }
                 }
             }
         };
@@ -90,69 +90,72 @@ public class MusicService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String user = intent.getStringExtra("user");
-        switch (intent.getAction()) {
-            case Constants.ACTION.FIRST_START:
-                break;
-            case Constants.ACTION.STARTFOREGROUND_ACTION:
-                Gson gson = new Gson();
-                Log.i("tag", "Received Start Foreground Intent ");
-                mSongsArray = gson.fromJson(intent.getStringExtra("songList"), SongsArray.class);
-                mSongs = mSongsArray.getSongs();
-                position = intent.getIntExtra("position", -1);
-                mSong = gson.fromJson(intent.getStringExtra("song"), Song.class);
-                create();
-                start(user);
-                showNotification();
+        String action = intent.getAction();
+        if (action != null) {
+            switch (action) {
+                case Constants.ACTION.FIRST_START:
+                    break;
+                case Constants.ACTION.STARTFOREGROUND_ACTION:
+                    Gson gson = new Gson();
+                    Log.i("tag", "Received Start Foreground Intent ");
+                    mSongsArray = gson.fromJson(intent.getStringExtra("songList"), SongsArray.class);
+                    mSongs = mSongsArray.getSongs();
+                    position = intent.getIntExtra("position", -1);
+                    mSong = gson.fromJson(intent.getStringExtra("song"), Song.class);
+                    create();
+                    start(user);
+                    showNotification();
 
-                break;
-            case Constants.ACTION.PREV_ACTION:
-                Log.i("tag", "Clicked Previous");
-                previous(user);
-                break;
-            case Constants.ACTION.PLAY_ACTION:
+                    break;
+                case Constants.ACTION.PREV_ACTION:
+                    Log.i("tag", "Clicked Previous");
+                    previous(user);
+                    break;
+                case Constants.ACTION.PLAY_ACTION:
 
-                if (user.equals("fromActivity")) {
-                    String type = intent.getStringExtra("type");
-                    if (type.equals("play")) {
-                        Log.i("tag", "Clicked Play");
-                        start(user);
-                    } else if (type.equals("pause")) {
-                        Log.i("tag", "Clicked Pause");
-                        pause(user);
+                    if (user.equals("fromActivity")) {
+                        String type = intent.getStringExtra("type");
+                        if (type.equals("play")) {
+                            Log.i("tag", "Clicked Play");
+                            start(user);
+                        } else if (type.equals("pause")) {
+                            Log.i("tag", "Clicked Pause");
+                            pause(user);
+                        }
+                    } else if (user.equals("fromService")) {
+                        if (mMediaPlayer.isPlaying())
+                            pause(user);
+                        else
+                            start(user);
                     }
-                } else if (user.equals("fromService")) {
-                    if (mMediaPlayer.isPlaying())
-                        pause(user);
-                    else
-                        start(user);
-                }
-                break;
-            case Constants.ACTION.NEXT_ACTION:
-                Log.i("tag", "Clicked Next");
-                next(user);
-                break;
-            case Constants.ACTION.SEEKTO_ACTION:
-                seekTo(intent.getIntExtra("progress", 0));
-                break;
-            case Constants.ACTION.UPDATE_SONG:
-                updateUi(user);
-                break;
-            case Constants.ACTION.SETLOOPING_ACTION:
-                setLooping(intent.getStringExtra("type"));
-                break;
-            case Constants.ACTION.STOPFOREGROUND_ACTION:
-                Log.i("tag", "Received Stop Foreground Intent");
-                mHandler.removeCallbacks(run);
-                mMediaPlayer.stop();
-                mMediaPlayer.release();
-                stopForeground(true);
-                stopSelf();
-                break;
+                    break;
+                case Constants.ACTION.NEXT_ACTION:
+                    Log.i("tag", "Clicked Next");
+                    next(user);
+                    break;
+                case Constants.ACTION.SEEKTO_ACTION:
+                    seekTo(intent.getIntExtra("progress", 0));
+                    break;
+                case Constants.ACTION.UPDATE_SONG:
+                    updateUi();
+                    break;
+                case Constants.ACTION.SETLOOPING_ACTION:
+                    setLooping(intent.getStringExtra("type"));
+                    break;
+                case Constants.ACTION.STOPFOREGROUND_ACTION:
+                    Log.i("tag", "Received Stop Foreground Intent");
+                    mHandler.removeCallbacks(run);
+                    mMediaPlayer.stop();
+                    mMediaPlayer.release();
+                    stopForeground(true);
+                    stopSelf();
+                    break;
+            }
         }
         return START_STICKY;
     }
 
-    private void updateUi(String user) {
+    private void updateUi() {
         serviceManager.updateUi();
     }
 
@@ -192,15 +195,12 @@ public class MusicService extends Service {
     public void create() {
         release();
         mMediaPlayer = MediaPlayer.create(this, Uri.parse(mSong.getFilePath()));
-        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                if (mLoopType.equals("all")) {
-                    next("fromService");
-                } else if (mLoopType.equals("no")) {
-                    mMediaPlayer.seekTo(0);
-                    mMediaPlayer.pause();
-                }
+        mMediaPlayer.setOnCompletionListener(mp -> {
+            if (mLoopType.equals("all")) {
+                next("fromService");
+            } else if (mLoopType.equals("no")) {
+                mMediaPlayer.seekTo(0);
+                mMediaPlayer.pause();
             }
         });
     }
@@ -311,7 +311,7 @@ public class MusicService extends Service {
                 field.setAccessible(true);
 
                 field.set(notification, miuiNotification);
-            } catch (Exception e) {
+            } catch (Exception ignored) {
 
             }
         }
@@ -325,7 +325,6 @@ public class MusicService extends Service {
     public void onDestroy() {
         super.onDestroy();
         Log.i("tag", "In onDestroy");
-        Toast.makeText(this, "Service Detroyed!", Toast.LENGTH_SHORT).show();
     }
 
     public class LocalBinder extends Binder {
@@ -346,7 +345,7 @@ public class MusicService extends Service {
         }
 
 
-        public void updateUi() {
+        void updateUi() {
             Intent updateIntent = new Intent(mContext, MusicService.class);
             updateIntent.setAction(Constants.ACTION.UPDATE_SONG);
             updateIntent.putExtra("user", "fromService");
@@ -376,7 +375,7 @@ public class MusicService extends Service {
             broadcaster.sendBroadcast(playIntent);
         }
 
-        public void pause() {
+        void pause() {
             Intent playIntent = new Intent(mContext, MusicService.class);
             playIntent.setAction(Constants.ACTION.PLAY_ACTION);
             playIntent.putExtra("type", "pause");
@@ -384,7 +383,7 @@ public class MusicService extends Service {
             broadcaster.sendBroadcast(playIntent);
         }
 
-        public void seekTo(int progress) {
+        void seekTo(int progress) {
             Intent seekIntent = new Intent(mContext, MusicService.class);
             seekIntent.setAction(Constants.ACTION.SEEKTO_ACTION);
             seekIntent.putExtra("progress", progress);

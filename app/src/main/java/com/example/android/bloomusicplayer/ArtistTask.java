@@ -15,7 +15,7 @@ public class ArtistTask extends AsyncTask<Void, String, SongList> {
     private View mRootView;
 
 
-    public ArtistTask(Context context, View rootView, SongList songList) {
+    ArtistTask(Context context, View rootView, SongList songList) {
         mContext = context;
         mRootView = rootView;
         mSongList = songList;

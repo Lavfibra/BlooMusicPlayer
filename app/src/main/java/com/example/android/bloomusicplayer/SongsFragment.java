@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -52,25 +51,19 @@ public class SongsFragment extends Fragment {
         SongTask songTask = new SongTask(getContext(), view, mSongList);
         songTask.execute();
 
-        mSongsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                TextView songid = view.findViewById(R.id.songid);
-                TextView listitemposition = view.findViewById(R.id.listitemposition);
-                int passposition = Integer.parseInt(listitemposition.getText().toString());
+        mSongsListView.setOnItemClickListener((adapterView, view1, i, l) -> {
+            TextView listitemposition = view1.findViewById(R.id.listitemposition);
+            int passposition = Integer.parseInt(listitemposition.getText().toString());
 
-                long id = Long.parseLong(songid.getText().toString());
+            Gson gson = new Gson();
+            SongsArray songsArray = new SongsArray(mSongList.getSongs());
+            String songsListAsAString = gson.toJson(songsArray);
 
-                Gson gson = new Gson();
-                SongsArray songsArray = new SongsArray(mSongList.getSongs());
-                String songsListAsAString = gson.toJson(songsArray);
+            Intent intent = new Intent(getContext(), PlayerActivity.class);
+            intent.putExtra("songsList", songsListAsAString);
+            intent.putExtra("position", passposition);
+            startActivity(intent);
 
-                Intent intent = new Intent(getContext(), PlayerActivity.class);
-                intent.putExtra("songsList", songsListAsAString);
-                intent.putExtra("position", passposition);
-                startActivity(intent);
-
-            }
         });
     }
 

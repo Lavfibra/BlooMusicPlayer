@@ -82,7 +82,7 @@ public class SongsListAdapter extends ArrayAdapter<Song> {
         return v;
     }
 
-    public void loadBitmap(final Song mP, ImageView mImageView, final int mPosition) {
+    private void loadBitmap(final Song mP, ImageView mImageView, final int mPosition) {
         final String resId = String.valueOf(mP.getId());
 
         final Bitmap bitmap = mAlbumCache.getBitmapFromMemCache(resId);

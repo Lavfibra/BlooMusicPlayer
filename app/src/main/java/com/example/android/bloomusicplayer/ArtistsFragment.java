@@ -2,12 +2,12 @@ package com.example.android.bloomusicplayer;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -31,7 +31,7 @@ public class ArtistsFragment extends Fragment {
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.artists_fragment, container, false);
         mArtistsListView = v.findViewById(R.id.artistsview);
         return v;
@@ -41,27 +41,27 @@ public class ArtistsFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        String songsAsAString = getArguments().getString("songList");
+        String songsAsAString = null;
+        if (getArguments() != null) {
+            songsAsAString = getArguments().getString("songList");
+        }
         gson = new Gson();
         mSongList = gson.fromJson(songsAsAString, SongList.class);
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ArtistTask artistTask = new ArtistTask(getContext(), view, mSongList);
         artistTask.execute();
 
-        mArtistsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                TextView artist = view.findViewById(R.id.artist);
+        mArtistsListView.setOnItemClickListener((adapterView, view1, i, l) -> {
+            TextView artist = view1.findViewById(R.id.artist);
 
-                Intent intent = new Intent(getContext(), ArtistActivity.class);
-                intent.putExtra("artist", artist.getText().toString());
-                intent.putExtra("songlist", gson.toJson(mSongList));
-                startActivity(intent);
-            }
+            Intent intent = new Intent(getContext(), ArtistActivity.class);
+            intent.putExtra("artist", artist.getText().toString());
+            intent.putExtra("songlist", gson.toJson(mSongList));
+            startActivity(intent);
         });
     }
 }

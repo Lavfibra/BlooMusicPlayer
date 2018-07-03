@@ -47,9 +47,9 @@ public class ArtistActivity extends Activity {
     Gson gson;
     ArrayList<Song> mArtistSongs;
 
-    private RecyclerView mRecyclerView;
-    private RecyclerView.Adapter mAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
+    RecyclerView mRecyclerView;
+    RecyclerView.Adapter mAdapter;
+    RecyclerView.LayoutManager mLayoutManager;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
